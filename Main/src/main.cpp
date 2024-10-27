@@ -75,6 +75,7 @@ void autonomous() {}
  */
 void opcontrol() {
 	pros::Controller master(pros::E_CONTROLLER_MASTER);
+
 	// Ring Lift and Mogo Mech
 
 	pros::Motor liftMotor(15);
@@ -85,7 +86,9 @@ void opcontrol() {
 	int intakeVoltage;
 	bool mogoDown = false;
 	bool mogoUp = false;
+
 	// Drivetrain
+
 	pros::Motor leftDrive1(12);
 	pros::Motor leftDrive2(13);
 	pros::Motor leftDrive3(14);
@@ -93,11 +96,11 @@ void opcontrol() {
 	pros::Motor rightDrive2(9);
 	pros::Motor rightDrive3(10);
 
-	leftDrive1.set_reversed(true);
+	leftDrive1.set_reversed(true); // Pros wouldn't accept the bool arg in motor definition
 	leftDrive3.set_reversed(true);
 	rightDrive2.set_reversed(true);
 
-	float leftDriveSpeed;
+	float leftDriveSpeed; // a float for quadratic input scaling (currently not in use, but doesn't hurt)
 	float rightDriveSpeed;
 
 	while (true) {
@@ -144,7 +147,7 @@ void opcontrol() {
 
 		leftDriveSpeed = 0;
 		rightDriveSpeed = 0;
-
+		
 		leftDriveSpeed += master.get_analog(ANALOG_LEFT_Y);
 		rightDriveSpeed += master.get_analog(ANALOG_LEFT_Y);
 
