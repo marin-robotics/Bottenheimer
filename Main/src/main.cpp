@@ -89,6 +89,7 @@ void opcontrol() {
 
 	// Drivetrain
 
+/** 
 	pros::Motor leftDrive1(12);
 	pros::Motor leftDrive2(13);
 	pros::Motor leftDrive3(14);
@@ -99,6 +100,11 @@ void opcontrol() {
 	leftDrive1.set_reversed(true); // Pros wouldn't accept the bool arg in motor definition
 	leftDrive3.set_reversed(true);
 	rightDrive2.set_reversed(true);
+
+*/
+
+	pros::MotorGroup leftDrive(-12, 13, -14);
+	pros::MotorGroup rightDrive(8, -9, 10);
 
 	float leftDriveSpeed; // a float for quadratic input scaling (currently not in use, but doesn't hurt)
 	float rightDriveSpeed;
@@ -209,13 +215,17 @@ void opcontrol() {
 		} else {
 			mogoMechUp.set_value(LOW);
 		}
-
+/**
 		rightDrive1.move(rightDriveSpeed);
 		rightDrive2.move(rightDriveSpeed);
 		rightDrive3.move(rightDriveSpeed);
 		leftDrive1.move(leftDriveSpeed);
 		leftDrive2.move(leftDriveSpeed);
 		leftDrive3.move(leftDriveSpeed);
+*/
+
+		rightDrive.move(rightDriveSpeed);
+		leftDrive.move(leftDriveSpeed);
 
 		pros::delay(20); // frametime: 20ms = 50hz
 	}
