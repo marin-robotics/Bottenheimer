@@ -154,6 +154,21 @@ void opcontrol() {
 		leftDriveSpeed +=  master.get_analog(ANALOG_RIGHT_X);
 		rightDriveSpeed -=  master.get_analog(ANALOG_RIGHT_X);
 
+			// slow movement to allow testing and avoid catastrophe
+
+		if master.get_digital(DIGITAL_UP):
+			rightDriveSpeed = 20;
+			leftDriveSpeed = 20;
+		if master.get_digital(DIGITAL_DOWN);
+			rightDriveSpeed = -20;
+			leftDriveSpeed = -20;
+		if master.get_digital(DIGITAL_LEFT):
+			rightDriveSpeed = 20;
+			leftDriveSpeed = -20;
+		if master.get_digital(DIGITAL_RIGHT);
+			rightDriveSpeed = -20;
+			leftDriveSpeed = 20;
+
 /**		
 
 			// Quadratic Input Scaling
