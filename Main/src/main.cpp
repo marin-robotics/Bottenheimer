@@ -24,7 +24,7 @@ void on_center_button() {
  */
 void initialize() {
 	pros::lcd::initialize();
-	pros::lcd::set_text(1, "Hello PROS User!");
+	pros::lcd::set_text(1, "Behold Botteneimer!");
 
 	pros::lcd::register_btn1_cb(on_center_button);
 }
@@ -103,8 +103,8 @@ void opcontrol() {
 
 */
 
-	pros::MotorGroup leftDrive(-12, 13, -14);
-	pros::MotorGroup rightDrive(8, -9, 10);
+	pros::MotorGroup leftDrive({-12, 13, -14});
+	pros::MotorGroup rightDrive({8, -9, 10});
 
 	float leftDriveSpeed; // a float for quadratic input scaling (currently not in use, but doesn't hurt)
 	float rightDriveSpeed;
@@ -162,18 +162,22 @@ void opcontrol() {
 
 			// slow movement to allow testing and avoid catastrophe
 
-		if master.get_digital(DIGITAL_UP):
+		if (master.get_digital(DIGITAL_UP)) {
 			rightDriveSpeed = 20;
 			leftDriveSpeed = 20;
-		if master.get_digital(DIGITAL_DOWN);
+		}
+		if (master.get_digital(DIGITAL_DOWN)) {
 			rightDriveSpeed = -20;
 			leftDriveSpeed = -20;
-		if master.get_digital(DIGITAL_LEFT):
+		}
+		if (master.get_digital(DIGITAL_LEFT)) {
 			rightDriveSpeed = 20;
 			leftDriveSpeed = -20;
-		if master.get_digital(DIGITAL_RIGHT);
+		}
+		if (master.get_digital(DIGITAL_RIGHT)) {
 			rightDriveSpeed = -20;
 			leftDriveSpeed = 20;
+		}
 
 /**		
 
