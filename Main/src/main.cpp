@@ -1,5 +1,40 @@
 #include "main.h"
 
+pros::Controller master(pros::E_CONTROLLER_MASTER);
+
+// Ring Lift and Mogo Mech
+
+pros::Motor liftMotor(15);
+pros::Motor intakeMotor(7);
+pros::ADIDigitalOut mogoMechDown(6);
+pros::ADIDigitalOut mogoMechUp(2);
+int liftVoltage;
+int intakeVoltage;
+bool mogoDown = false;
+bool mogoUp = false;
+
+// Drivetrain
+
+/** 
+pros::Motor leftDrive1(12);
+pros::Motor leftDrive2(13);
+pros::Motor leftDrive3(14);
+pros::Motor rightDrive1(8);
+pros::Motor rightDrive2(9);
+pros::Motor rightDrive3(10);
+
+leftDrive1.set_reversed(true); // Pros wouldn't accept the bool arg in motor definition
+leftDrive3.set_reversed(true);
+rightDrive2.set_reversed(true);
+
+*/
+
+pros::MotorGroup leftDrive({-12, 13, -14});
+pros::MotorGroup rightDrive({8, -9, 10});
+
+float leftDriveSpeed; // a float for quadratic input scaling (currently not in use, but doesn't hurt)
+float rightDriveSpeed;
+
 /**
  * A callback function for LLEMU's center button.
  *
@@ -74,40 +109,6 @@ void autonomous() {}
  * task, not resume it from where it left off.
  */
 void opcontrol() {
-	pros::Controller master(pros::E_CONTROLLER_MASTER);
-
-	// Ring Lift and Mogo Mech
-
-	pros::Motor liftMotor(15);
-	pros::Motor intakeMotor(7);
-	pros::ADIDigitalOut mogoMechDown(6);
-	pros::ADIDigitalOut mogoMechUp(2);
-	int liftVoltage;
-	int intakeVoltage;
-	bool mogoDown = false;
-	bool mogoUp = false;
-
-	// Drivetrain
-
-/** 
-	pros::Motor leftDrive1(12);
-	pros::Motor leftDrive2(13);
-	pros::Motor leftDrive3(14);
-	pros::Motor rightDrive1(8);
-	pros::Motor rightDrive2(9);
-	pros::Motor rightDrive3(10);
-
-	leftDrive1.set_reversed(true); // Pros wouldn't accept the bool arg in motor definition
-	leftDrive3.set_reversed(true);
-	rightDrive2.set_reversed(true);
-
-*/
-
-	pros::MotorGroup leftDrive({-12, 13, -14});
-	pros::MotorGroup rightDrive({8, -9, 10});
-
-	float leftDriveSpeed; // a float for quadratic input scaling (currently not in use, but doesn't hurt)
-	float rightDriveSpeed;
 
 	while (true) {
 
