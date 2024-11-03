@@ -1,4 +1,5 @@
 #include "main.h"
+#include <cstdlib>
 
 pros::Controller master(pros::E_CONTROLLER_MASTER);
 
@@ -15,25 +16,13 @@ bool mogoUp = false;
 
 // Drivetrain
 
-/** 
-pros::Motor leftDrive1(12);
-pros::Motor leftDrive2(13);
-pros::Motor leftDrive3(14);
-pros::Motor rightDrive1(8);
-pros::Motor rightDrive2(9);
-pros::Motor rightDrive3(10);
-
-leftDrive1.set_reversed(true); // Pros wouldn't accept the bool arg in motor definition
-leftDrive3.set_reversed(true);
-rightDrive2.set_reversed(true);
-
-*/
-
 pros::MotorGroup leftDrive({-12, 13, -14});
 pros::MotorGroup rightDrive({8, -9, 10});
 
 float leftDriveSpeed; // a float for quadratic input scaling (currently not in use, but doesn't hurt)
 float rightDriveSpeed;
+
+int chaosVariable;
 
 /**
  * A callback function for LLEMU's center button.
@@ -205,6 +194,14 @@ void opcontrol() {
 
 */
 
+		// Chaos Button
+		chaosVariable += 1;
+		if (master.get_digital(DIGITAL_A) and chaosVariable % 10 == 0) {
+			rightDriveSpeed = ((rand() % 254)-127)/2;
+			leftDriveSpeed = ((rand() % 254)-127)/2;
+		}
+
+
         // Movement Exec
 
 		liftMotor.move(liftVoltage);
@@ -220,14 +217,6 @@ void opcontrol() {
 		} else {
 			mogoMechUp.set_value(LOW);
 		}
-/**
-		rightDrive1.move(rightDriveSpeed);
-		rightDrive2.move(rightDriveSpeed);
-		rightDrive3.move(rightDriveSpeed);
-		leftDrive1.move(leftDriveSpeed);
-		leftDrive2.move(leftDriveSpeed);
-		leftDrive3.move(leftDriveSpeed);
-*/
 
 		rightDrive.move(rightDriveSpeed);
 		leftDrive.move(leftDriveSpeed);
