@@ -1,5 +1,4 @@
 #include "main.h"
-#include <cstdlib>
 
 pros::Controller master(pros::E_CONTROLLER_MASTER);
 
@@ -23,6 +22,8 @@ float leftDriveSpeed; // a float for quadratic input scaling (currently not in u
 float rightDriveSpeed;
 
 int chaosVariable;
+
+bool safety = true;
 
 /**
  * A callback function for LLEMU's center button.
@@ -144,11 +145,13 @@ void opcontrol() {
 		leftDriveSpeed = 0;
 		rightDriveSpeed = 0;
 		
-		leftDriveSpeed += master.get_analog(ANALOG_LEFT_Y);
-		rightDriveSpeed += master.get_analog(ANALOG_LEFT_Y);
+		if (not safety) {
+			leftDriveSpeed += master.get_analog(ANALOG_LEFT_Y);
+			rightDriveSpeed += master.get_analog(ANALOG_LEFT_Y);
 
-		leftDriveSpeed +=  master.get_analog(ANALOG_RIGHT_X);
-		rightDriveSpeed -=  master.get_analog(ANALOG_RIGHT_X);
+			leftDriveSpeed +=  master.get_analog(ANALOG_RIGHT_X);
+			rightDriveSpeed -=  master.get_analog(ANALOG_RIGHT_X);
+		}
 
 			// slow movement to allow testing and avoid catastrophe
 
@@ -195,10 +198,12 @@ void opcontrol() {
 */
 
 		// Chaos Button
-		chaosVariable += 1;
-		if (master.get_digital(DIGITAL_A) and chaosVariable % 10 == 0) {
-			rightDriveSpeed = ((rand() % 254)-127)/2;
-			leftDriveSpeed = ((rand() % 254)-127)/2;
+		if (not safety) {
+			chaosVariable += 1;
+			if (master.get_digital(DIGITAL_A) and chaosVariable % 10 == 0) {
+				rightDriveSpeed = ((rand() % 254)-127)/2;
+				leftDriveSpeed = ((rand() % 254)-127)/2;
+			}
 		}
 
 
