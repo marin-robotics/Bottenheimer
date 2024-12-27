@@ -8,22 +8,27 @@ pros::Motor liftMotor(15);
 pros::Motor intakeMotor(7);
 pros::ADIDigitalOut mogoMechDown(6);
 pros::ADIDigitalOut mogoMechUp(2);
+pros::Motor wallstake1 (2);
+pros::Motor wallstake2 (3);
 int liftVoltage;
 int intakeVoltage;
 bool mogoDown = false;
 bool mogoUp = false;
+int wallstakeDegrees = 0;
+int wallstakeCurrentPos = 0;
 
 // Drivetrain
 
 pros::MotorGroup leftDrive({-12, 13, -14});
 pros::MotorGroup rightDrive({8, -9, 10});
+pros::MotorGroup wallstake({-2, 3});
 
 float leftDriveSpeed; // a float for quadratic input scaling (currently not in use, but doesn't hurt)
 float rightDriveSpeed;
 
 int chaosVariable;
 
-bool safety = true;
+bool safety = false; // disables driving other than the slow driving with arrows if true
 
 /**
  * A callback function for LLEMU's center button.
@@ -106,6 +111,8 @@ void opcontrol() {
 
 		liftVoltage = 0;  // reset voltage to stop motor if no button is pressed to override this value
 		intakeVoltage = 0;
+		wallstakeCurrentPos = wallstake1.get_position();
+		
 
         // Lift logic
 
@@ -123,6 +130,15 @@ void opcontrol() {
 		}
 		if (master.get_digital(DIGITAL_L2)) {
 			intakeVoltage = -127;
+		}
+
+		// Lift arm logic
+
+		if (master.get_digital(DIGITAL_UP)) {
+			wallstakeDegrees = -600;
+		}
+		if (master.get_digital(DIGITAL_DOWN)) {
+			wallstakeDegrees = 0;
 		}
 
         // Mogo mech logic
@@ -155,7 +171,7 @@ void opcontrol() {
 
 			// slow movement to allow testing and avoid catastrophe
 
-		if (master.get_digital(DIGITAL_UP)) {
+		/**if (master.get_digital(DIGITAL_UP)) {
 			rightDriveSpeed = 20;
 			leftDriveSpeed = 20;
 		}
@@ -163,6 +179,7 @@ void opcontrol() {
 			rightDriveSpeed = -20;
 			leftDriveSpeed = -20;
 		}
+		*/
 		if (master.get_digital(DIGITAL_LEFT)) {
 			rightDriveSpeed = 20;
 			leftDriveSpeed = -20;
@@ -201,8 +218,8 @@ void opcontrol() {
 		if (not safety) {
 			chaosVariable += 1;
 			if (master.get_digital(DIGITAL_A) and chaosVariable % 10 == 0) {
-				rightDriveSpeed = ((rand() % 254)-127)/2;
-				leftDriveSpeed = ((rand() % 254)-127)/2;
+				rightDriveSpeed = ((rand() % 254)-127);
+				leftDriveSpeed = ((rand() % 254)-127);
 			}
 		}
 
@@ -211,6 +228,12 @@ void opcontrol() {
 
 		liftMotor.move(liftVoltage);
 		intakeMotor.move(intakeVoltage);
+
+		if (abs(wallstakeDegrees - wallstakeCurrentPos) > 400) {
+			wallstake.move_absolute(wallstakeDegrees, 80);
+		} else {
+			wallstake.move_absolute(wallstakeDegrees, 80);
+		}
 
 		if (mogoDown) {
 			mogoMechDown.set_value(HIGH);
