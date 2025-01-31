@@ -6,27 +6,38 @@ pros::Controller master(pros::E_CONTROLLER_MASTER);
 
 pros::Motor liftMotor(15);
 pros::Motor intakeMotor(7);
-pros::ADIDigitalOut mogoMechDown(6);
+pros::ADIDigitalOut mogoMechDown(6); // ignore its suggestion, this works
 pros::ADIDigitalOut mogoMechUp(2);
-pros::Motor wallstake1 (2);
-pros::Motor wallstake2 (3);
+pros::ADIDigitalOut rightDoinkDown();
+pros::ADIDigitalOut leftDoinkDown();
+pros::Motor wallStake1 (2);
+pros::Motor wallStake2 (3);
 int liftVoltage;
 int intakeVoltage;
 bool mogoDown = false;
 bool mogoUp = false;
-int wallstakeDegrees = 0;
-int wallstakeCurrentPos = 0;
+bool leftDoink = false;
+bool rightDoink = false;
+bool aPressed = false;
+bool leftPressed = false;
+
 
 // Drivetrain
 
 pros::MotorGroup leftDrive({-12, 13, -14});
 pros::MotorGroup rightDrive({8, -9, 10});
-pros::MotorGroup wallstake({-2, 3});
 
 float leftDriveSpeed; // a float for quadratic input scaling (currently not in use, but doesn't hurt)
 float rightDriveSpeed;
 
-int chaosVariable;
+// Redirect
+
+pros::MotorGroup wallStake({-2, 3});
+
+int wallStakeDegrees = 0;
+int wallStakeCurrentPos = 0;
+
+// Extras
 
 bool safety = false; // disables driving other than the slow driving with arrows if true
 
@@ -46,6 +57,8 @@ void on_center_button() {
 	}
 }
 
+
+
 /**
  * Runs initialization code. This occurs as soon as the program is started.
  *
@@ -53,10 +66,10 @@ void on_center_button() {
  * to keep execution time for this mode under a few seconds.
  */
 void initialize() {
-	pros::lcd::initialize();
-	pros::lcd::set_text(1, "Behold Botteneimer!");
+	 pros::lcd::initialize();
+    pros::lcd::set_text(1, "Behold Botteneimer!");
 
-	pros::lcd::register_btn1_cb(on_center_button);
+    pros::lcd::register_btn1_cb(on_center_button);
 }
 
 /**
@@ -86,9 +99,79 @@ void competition_initialize() {}
  *
  * If the robot is disabled or communications is lost, the autonomous task
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
- * from where it left off.
+ * from where it left off..2
  */
-void autonomous() {}
+void autonomous() {
+	mogoMechUp.set_value(HIGH);
+	mogoMechDown.set_value(LOW);
+	wallStake.move_absolute(-500, 80);
+	pros::delay(500);
+	leftDrive.move(25);
+	rightDrive.move(25);
+	pros::delay(1075);
+	leftDrive.move(0);
+	rightDrive.move(0);
+	pros::delay(300);
+	wallStake.move_absolute(0, 127);
+	pros::delay(1500);
+	leftDrive.move(-68);
+	rightDrive.move(-80);
+	wallStake.move_absolute(-350, 80);
+	pros::delay(300);
+	leftDrive.move(-80);
+	rightDrive.move(-68);
+	pros::delay(300);
+	leftDrive.move(-80);
+	rightDrive.move(-80);
+	pros::delay(250);
+	leftDrive.move(0);
+	rightDrive.move(0);
+	mogoMechUp.set_value(LOW);
+	mogoMechDown.set_value(HIGH);
+	pros::delay(750);
+	leftDrive.move(60);
+	rightDrive.move(-60);
+	pros::delay(540);
+	leftDrive.move(0);
+	rightDrive.move(0);
+	intakeMotor.move(127);
+	pros::delay(250);
+	leftDrive.move(50);
+	rightDrive.move(50);
+	pros::delay(700);
+	leftDrive.move(0);
+	rightDrive.move(0);
+	liftMotor.move(127);
+	pros::delay(2000);
+	leftDrive.move(60);
+	rightDrive.move(-60);
+	pros::delay(450);
+	leftDrive.move(50);
+	rightDrive.move(50);
+	pros::delay(250);
+	liftMotor.move(0);
+	pros::delay(300);
+	leftDrive.move(0);
+	rightDrive.move(0);
+	liftMotor.move(127);
+	pros::delay(1500);
+	intakeMotor.move(0);
+	pros::delay(1500);
+	liftMotor.move(0);
+	leftDrive.move(-30);
+	rightDrive.move(-30);
+	wallStake.move_absolute(-450, 80);
+	pros::delay(250);
+	leftDrive.move(60);
+	rightDrive.move(-60);
+	pros::delay(525);
+	leftDrive.move(50);
+	rightDrive.move(50);
+	pros::delay(1800);
+	leftDrive.move(0);
+	rightDrive.move(0);
+	wallStake.move(0);
+}
 
 /**
  * Runs the operator control code. This function will be started in its own task
@@ -111,8 +194,7 @@ void opcontrol() {
 
 		liftVoltage = 0;  // reset voltage to stop motor if no button is pressed to override this value
 		intakeVoltage = 0;
-		wallstakeCurrentPos = wallstake1.get_position();
-		
+		wallStakeCurrentPos = wallStake1.get_position();
 
         // Lift logic
 
@@ -135,12 +217,15 @@ void opcontrol() {
 		// Lift arm logic
 
 		if (master.get_digital(DIGITAL_UP)) {
-			wallstakeDegrees = -600;
+			wallStakeDegrees = -600;
+		}
+		if (master.get_digital(DIGITAL_RIGHT)) {
+			wallStakeDegrees = -350;
 		}
 		if (master.get_digital(DIGITAL_DOWN)) {
-			wallstakeDegrees = 0;
+			wallStakeDegrees = 0;
 		}
-
+	
         // Mogo mech logic
 
 		if (master.get_digital(DIGITAL_X)) {
@@ -151,9 +236,32 @@ void opcontrol() {
 			mogoDown = false;
 			mogoUp = true;
 		}
-		if (master.get_digital(DIGITAL_B)) {
-			mogoDown = false;
-			mogoUp = false;
+
+		// Doinker Logic
+
+		if (master.get_digital(DIGITAL_A) and (not aPressed) and (not rightDoink)) {
+			rightDoink = true;
+			aPressed = true;
+		}
+		if (master.get_digital(DIGITAL_A) and (not aPressed) and rightDoink) {
+			rightDoink = false;
+			aPressed = true;
+		}
+		if (not master.get_digital(DIGITAL_A) and (aPressed)) {
+			aPressed = false;
+		}
+
+
+		if (master.get_digital(DIGITAL_LEFT) and (not leftPressed) and (not leftDoink)) {
+			leftDoink = true;
+			leftPressed = true;
+		}
+		if (master.get_digital(DIGITAL_LEFT) and (not leftPressed) and leftDoink) {
+			leftDoink = false;
+			leftPressed = true;
+		}
+		if (not master.get_digital(DIGITAL_LEFT) and (leftPressed)) {
+			leftPressed = false;
 		}
 
 		// Drive Logic
@@ -169,17 +277,7 @@ void opcontrol() {
 			rightDriveSpeed -=  master.get_analog(ANALOG_RIGHT_X);
 		}
 
-			// slow movement to allow testing and avoid catastrophe
-
-		/**if (master.get_digital(DIGITAL_UP)) {
-			rightDriveSpeed = 20;
-			leftDriveSpeed = 20;
-		}
-		if (master.get_digital(DIGITAL_DOWN)) {
-			rightDriveSpeed = -20;
-			leftDriveSpeed = -20;
-		}
-		*/
+/**
 		if (master.get_digital(DIGITAL_LEFT)) {
 			rightDriveSpeed = 20;
 			leftDriveSpeed = -20;
@@ -187,12 +285,10 @@ void opcontrol() {
 		if (master.get_digital(DIGITAL_RIGHT)) {
 			rightDriveSpeed = -20;
 			leftDriveSpeed = 20;
-		}
-
-/**		
-
+		}	
+*/
 			// Quadratic Input Scaling
-
+/**
 		if (leftDriveSpeed > 0) {
 			leftDriveSpeed /= 127;
 			leftDriveSpeed *= leftDriveSpeed;
@@ -211,29 +307,14 @@ void opcontrol() {
 			rightDriveSpeed *= rightDriveSpeed;
 			rightDriveSpeed *= -127;
 		}
-
 */
-
-		// Chaos Button
-		if (not safety) {
-			chaosVariable += 1;
-			if (master.get_digital(DIGITAL_A) and chaosVariable % 10 == 0) {
-				rightDriveSpeed = ((rand() % 254)-127);
-				leftDriveSpeed = ((rand() % 254)-127);
-			}
-		}
-
 
         // Movement Exec
 
 		liftMotor.move(liftVoltage);
 		intakeMotor.move(intakeVoltage);
 
-		if (abs(wallstakeDegrees - wallstakeCurrentPos) > 400) {
-			wallstake.move_absolute(wallstakeDegrees, 80);
-		} else {
-			wallstake.move_absolute(wallstakeDegrees, 80);
-		}
+		wallStake.move_absolute(wallStakeDegrees, 80);
 
 		if (mogoDown) {
 			mogoMechDown.set_value(HIGH);
@@ -245,6 +326,18 @@ void opcontrol() {
 		} else {
 			mogoMechUp.set_value(LOW);
 		}
+
+		if (rightDoink) {
+			rightDoinkDown.set_value(HIGH);
+		} else {
+			rightDoinkDown.set_value(LOW);
+		}
+		if (leftDoink) {
+			leftDoinkDown.set_value(HIGH);
+		} else {
+			leftDoinkDown.set_value(LOW);
+		}
+
 
 		rightDrive.move(rightDriveSpeed);
 		leftDrive.move(leftDriveSpeed);
